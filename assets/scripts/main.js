@@ -68,6 +68,13 @@ async function getRecipes() {
   // EXPOSE - START (All expose numbers start with A)
   // A1. TODO - Check local storage to see if there are any recipes.
   //            If there are recipes, return them.
+  let isRecipe = localStorage.getItem('recipes');
+  if(isRecipe){
+    return JSON.parse(isRecipe);
+  }else{
+    var recipes = [];
+    return new Promise(getRecipesFromNetwork);
+  }
   /**************************/
   // The rest of this method will be concerned with requesting the recipes
   // from the network
@@ -81,6 +88,22 @@ async function getRecipes() {
   // A4-A11 will all be *inside* the callback function we passed to the Promise
   // we're returning
   /**************************/
+  async function getRecipesFromNetwork(resolve, reject){
+    for(let i = 0; i < RECIPE_URLS.length; i++){
+      try{
+        let recipe = await fetch(RECIPE_URLS[i]);
+        let recipeJSON = await recipe.json();
+        recipes.push(recipeJSON);
+
+      }catch(error){
+        console.error(error);
+        reject(error);
+        return;
+      }
+    }
+    saveRecipesToStorage(recipes);
+    resolve(recipes);
+  }
   // A4. TODO - Loop through each recipe in the RECIPE_URLS array constant
   //            declared above
   // A5. TODO - Since we are going to be dealing with asynchronous code, create
